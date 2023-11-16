@@ -1,0 +1,31 @@
+# this file is designed to be source'd from bash or zsh
+
+if which stm32cubeide > /dev/null; then
+    STM_DIR=$(dirname $(which stm32cubeide))
+    echo Found stm32cubeide at $STM_DIR
+else
+    STM_DIR=.
+    echo stm32cubeide not found in path. using local directory
+fi
+
+GCC_BIN=$(find "${STM_DIR}/" -name arm-none-eabi-gcc)
+if [ -z "$GCC_BIN" ] ; then
+    echo arm-none-eabi-gcc not found in $STM_DIR
+    return
+fi
+
+GCC_DIR=$(dirname $GCC_BIN)
+echo Adding to path: $GCC_DIR
+
+_SDT_OLD_PATH=$PATH
+export PATH=$GCC_DIR:$PATH
+
+deactivate () {
+    if [ -n "$_SDT_OLD_PATH" ] ; then
+        export PATH=$_SDT_OLD_PATH
+        unset _SDT_OLD_PATH
+    fi
+
+    unset -f deactivate
+}
+
