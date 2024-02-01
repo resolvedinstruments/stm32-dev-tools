@@ -8,7 +8,7 @@ else
     echo stm32cubeide not found in path. using local directory
 fi
 
-GCC_BIN=$(find "${STM_DIR}/" -name arm-none-eabi-gcc)
+GCC_BIN=$(find "${STM_DIR}/" -name arm-none-eabi-gcc | sort | head -n 1)
 if [ -z "$GCC_BIN" ] ; then
     echo arm-none-eabi-gcc not found in $STM_DIR
     return
