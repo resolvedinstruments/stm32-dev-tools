@@ -1,0 +1,52 @@
+# this file is designed to be source'd from bash or zsh
+# Define the search directories
+
+if type stm32-deactivate &> /dev/null; then
+    stm32-deactivate
+fi
+
+_SDT_OLD_PATH=$PATH
+
+stm32-deactivate () {
+    if [ -n "$_SDT_OLD_PATH" ] ; then
+        export PATH=$_SDT_OLD_PATH
+        unset _SDT_OLD_PATH
+    fi
+
+    unset -f stm32-deactivate
+}
+
+SEARCH_DIRS=("$HOME/st/" "/opt/st/")
+
+
+STM_IDE_DIR=$(dirname $(which stm32cubeide))
+if [ -n "$STM_IDE_DIR" ]; then
+    SEARCH_DIRS+=("$STM_IDE_DIR/")
+fi
+echo $SEARCH_DIRS
+
+# Search for arm-none-eabi-gcc and STM32_Programmer_CLI in the specified directories
+GCC_BINS=$(find "${SEARCH_DIRS[@]}" -name arm-none-eabi-gcc 2>/dev/null | sort -V)
+CLI_BINS=$(find "${SEARCH_DIRS[@]}" -name STM32_Programmer_CLI 2>/dev/null | sort -V)
+
+if [ -z "$GCC_BINS" ] ; then
+    echo arm-none-eabi-gcc not found in "${SEARCH_DIRS[@]}"
+else
+    echo "Found the following arm-none-eabi-gcc binaries:"
+    echo "$GCC_BINS"
+    # Select the last matching path
+    GCC_BIN=$(echo "$GCC_BINS" | tail -n 1)
+    GCC_DIR=$(dirname $GCC_BIN)
+    echo Adding to path: $GCC_DIR
+    export PATH=$GCC_DIR:$PATH
+fi
+
+if [ -z "$CLI_BINS" ] ; then
+    echo STM32_Programmer_CLI not found in "${SEARCH_DIRS[@]}"
+else
+    # Select the last matching path
+    CLI_BIN=$(echo "$CLI_BINS" | tail -n 1)
+    CLI_DIR=$(dirname $CLI_BIN)
+    echo Adding to path: $CLI_DIR
+    export PATH=$CLI_DIR:$PATH
+fi
